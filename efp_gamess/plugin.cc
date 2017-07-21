@@ -47,7 +47,7 @@ int read_options(std::string name, Options& options)
 }
 
 extern "C"
-SharedWavefunction efp_gamess(SharedWavefunction ref_wfn, Options& options)
+SharedMatrix efp_gamess(SharedWavefunction ref_wfn, Options& options)
 {
     int print = options.get_int("PRINT");
 

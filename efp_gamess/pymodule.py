@@ -131,6 +131,11 @@ def run_efp_gamess(name, **kwargs):
     print("\nTransformed MO coefficients")
     print(psi4_C)
 
+    print ("\nTransforming GAMESS Fock matrix")
+    psi4_F_tmp=np.matmul(fock_np,np.transpose(trans_mat_h))
+    psi4_F=np.matmul(trans_mat_h,psi4_F_tmp)
+    print(psi4_F)
+
     # Test adding these together
     #print("Adding np.asarray(trans_mat_h)+np.asarray(trans_mat_c)\n")
     #test_sum=np.asarray(trans_mat_h)+np.asarray(trans_mat_c)

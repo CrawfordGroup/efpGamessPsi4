@@ -74,6 +74,7 @@ def run_efp_gamess(name, **kwargs):
     print(np.asarray(Farray))
     # I think this does nothing different from the above
     Fa=ref_wfn.Fa()
+    Ca=ref_wfn.Ca()
     print("\nPrinting Fa=ref_wfn.Fa()")
     print(Fa)
     print("\nPrinting np.asarray(Fa)")
@@ -117,8 +118,23 @@ def run_efp_gamess(name, **kwargs):
     print("\nListing dataset in h5 file EFPcalc group")
     print(list(group.keys()))
     fock_dset=group['CONVERGED TOTAL FOCK MATRIX']
-    fock_np=np.array(fock_dset)
-    print("\nGAMESS Fock matrix as numpy array")
+    fock_np_lt=np.array(fock_dset)
+    print("\nGAMESS Fock matrix as numpy array (lower triangle)")
+    print(fock_np_lt)
+    nbf=(ref_wfn.basisset().nbf())
+    print("Basis set info")
+    print(ref_wfn.basisset().has_puream())
+    fock_lt_iter=np.nditer(fock_np_lt,order='C')
+    print("nbf = ",nbf)
+    fock_np=np.zeros((nbf,nbf))
+    fock_np.shape=(nbf,nbf)
+    for i in range(nbf):
+        for j in range(i+1):
+            fock_np[i][j]=fock_lt_iter[0]
+            fock_np[j][i]=fock_lt_iter[0]
+            fock_lt_iter.iternext()
+
+    print("Upper triangle of fock printing next")
     print(fock_np)
     mo_dset=group['MO_coeff']
     mo_np=np.array(mo_dset)
@@ -152,6 +168,10 @@ def run_efp_gamess(name, **kwargs):
 
     # Change return to original ref_wfn, hopefully changed
     #return efp_gamess_wfn
+    Fa.copy(psi4.core.Matrix.from_array(psi4_F))
+    Ca.copy(psi4.core.Matrix.from_array(psi4_C))
+    ref_wfn.Fa().print_out()
+    ref_wfn.Ca().print_out()
     return ref_wfn
 
 

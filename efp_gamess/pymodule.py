@@ -63,6 +63,7 @@ def run_efp_gamess(name, **kwargs):
     print("\nPrinting ref_wfn.Fa")
     print(ref_wfn.Fa)
     # This defines a psi4.core.Matrix object and prints it
+    print("\nPrinting np.asarray(ref_wfn.Fa())")
     print(np.asarray(ref_wfn.Fa()))
     #Farray=np.asarray(ref_wfn.Fa())
     Farray=ref_wfn.Fa().to_array()
@@ -78,14 +79,14 @@ def run_efp_gamess(name, **kwargs):
     print("\nPrinting np.asarray(Fa)")
     print(np.asarray(Fa))
     # This prints to the output the matrix values
-    Fa.print_out()
+    #Fa.print_out()
     # This actually changes Fa and the ref_wfn Fa value
-    Fa.set(0,0,0.0)
-    Fa.print_out()
+    #Fa.set(0,0,0.0)
+    #Fa.print_out()
     #ref_wfn.Fa=Fa
     # Tests my previous assertion about ref_wfn changes
-    Fa_zeroed=ref_wfn.Fa()
-    Fa_zeroed.print_out()
+    #Fa_zeroed=ref_wfn.Fa()
+    #Fa_zeroed.print_out()
 
     # Change return name to the trans matrix I'm trying to send back
     #efp_gamess_wfn = psi4.core.plugin('efp_gamess.so', ref_wfn)
@@ -110,10 +111,32 @@ def run_efp_gamess(name, **kwargs):
     print(np.asarray(trans_mat_h))
     trans_mat_h.print_out()
 
+    # Define hdf5 file
+    f=h5py.File("form.h5","r")
+    group=f["EFPcalc"]
+    print("\nListing dataset in h5 file EFPcalc group")
+    print(list(group.keys()))
+    fock_dset=group['CONVERGED TOTAL FOCK MATRIX']
+    fock_np=np.array(fock_dset)
+    print("\nGAMESS Fock matrix as numpy array")
+    print(fock_np)
+    mo_dset=group['MO_coeff']
+    mo_np=np.array(mo_dset)
+    print("\nGAMESS MO coeficients")
+    print(mo_np)
+
+    print("\nPSI4 MO coefficients")
+    print("\nTransforming MO coefficients")
+    psi4_C=np.matmul(trans_mat_c,np.transpose(mo_np))
+    print("\nTransformed MO coefficients")
+    print(psi4_C)
+
     # Test adding these together
-    print("Adding np.asarray(trans_mat_h)+np.asarray(trans_mat_c)\n")
-    test_sum=np.asarray(trans_mat_h)+np.asarray(trans_mat_c)
-    print(test_sum)
+    #print("Adding np.asarray(trans_mat_h)+np.asarray(trans_mat_c)\n")
+    #test_sum=np.asarray(trans_mat_h)+np.asarray(trans_mat_c)
+    #print(test_sum)
+
+
     #test_sum2=np.asarray(Fa)+np.asarray(trans_mat_c)
     #print(test_sum2)
     #test_sum.print_out()

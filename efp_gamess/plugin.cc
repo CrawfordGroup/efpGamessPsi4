@@ -44,31 +44,18 @@ int read_options(std::string name, Options& options)
     if (name == "EFP_GAMESS"|| options.read_globals()) {
         /*- The amount of information printed to the output file -*/
         options.add_int("PRINT", 1);
-				options.add_int("coleman",14);
-				std::cout << "I'm reading options\n";
+				options.add_str("TRANS_MAT","");
     }
 
     return true;
 }
 
-//extern "C"
-//SharedWavefunction efp_gamess(SharedWavefunction ref_wfn, Options& options)
-//{
-//    int print = options.get_int("PRINT");
-
-    /* Your code goes here */
-
-    // Typically you would build a new wavefunction and populate it with data
-//    return ref_wfn;
-//}
 extern "C"
 SharedMatrix efp_gamess(SharedWavefunction ref_wfn, Options& options)
 //std::vector<SharedMatrix> efp_gamess(SharedWavefunction ref_wfn, Options& options)
 {
-		//std::shared_ptr<Wavefunction> wfn;
-    //wfn->shallow_copy(ref_wfn);
     int print = options.get_int("PRINT");
-		int ret_id = options.get_int("coleman");
+		std::string which_trans = options.get_str("TRANS_MAT");
 	  std::shared_ptr<BasisSet> basis = ref_wfn->basisset();
 		int nao=basis->nao();
 		int nso=ref_wfn->nso();
@@ -352,13 +339,17 @@ SharedMatrix efp_gamess(SharedWavefunction ref_wfn, Options& options)
 		ret_trans.push_back(UC_);
 		ret_trans.push_back(UH_);
 		//return ret_trans;
-		if (ret_id==0){
+		if (which_trans=="C"){
 			outfile->Printf("Coleman I am return UC_\n");
 			return UC_;
 		}
-		else{
+		else if (which_trans=="F"){
 			outfile->Printf("Coleman I am return UH_\n");
 			return UH_;
+		}
+		else {
+			outfile->Printf("Coleman, I got an invalid value for option trans_mat\n");
+			exit(1);
 		}
     //return ref_wfn;
 }

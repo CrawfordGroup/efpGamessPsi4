@@ -45,8 +45,7 @@ def run_efp_gamess(name, **kwargs):
     kwargs = p4util.kwargs_lower(kwargs)
 
     # Your plugin's psi4 run sequence goes here
-    psi4.core.set_local_option('MYPLUGIN', 'PRINT', 1)
-
+    psi4.core.set_local_option('EFP_GAMESS', 'PRINT', 1)
     # Compute a SCF reference, a wavefunction is return which holds the molecule used, orbitals
     # Fock matrices, and more
     print('Attention! This SCF may be density-fitted.')
@@ -60,70 +59,46 @@ def run_efp_gamess(name, **kwargs):
     # Call the Psi4 plugin
     # Please note that setting the reference wavefunction in this way is ONLY for plugins
     # This prints a bound python method
-    print("\nPrinting ref_wfn.Fa")
-    print(ref_wfn.Fa)
-    # This defines a psi4.core.Matrix object and prints it
-    print("\nPrinting np.asarray(ref_wfn.Fa())")
-    print(np.asarray(ref_wfn.Fa()))
-    #Farray=np.asarray(ref_wfn.Fa())
-    Farray=ref_wfn.Fa().to_array()
-    print("\nPrinting Farray, which is np.asarray(ref_wfn.Fa())")
-    print(Farray)
 
-    print("\nPrinting Farray asarray")
-    print(np.asarray(Farray))
-    # I think this does nothing different from the above
+    # This defines a psi4.core.Matrix object converts to array and prints it
+    print("\nPrinting ref_wfn.Fa().to_array()")
+    Fa_np=ref_wfn.Fa().to_array()
+    print(Fa_np)
+
+    # This returns psi4.core.Matrix objects
     Fa=ref_wfn.Fa()
     Ca=ref_wfn.Ca()
-    print("\nPrinting Fa=ref_wfn.Fa()")
-    print(Fa)
-    print("\nPrinting np.asarray(Fa)")
-    print(np.asarray(Fa))
-    # This prints to the output the matrix values
-    #Fa.print_out()
-    # This actually changes Fa and the ref_wfn Fa value
-    #Fa.set(0,0,0.0)
-    #Fa.print_out()
-    #ref_wfn.Fa=Fa
-    # Tests my previous assertion about ref_wfn changes
-    #Fa_zeroed=ref_wfn.Fa()
-    #Fa_zeroed.print_out()
 
-    # Change return name to the trans matrix I'm trying to send back
-    #efp_gamess_wfn = psi4.core.plugin('efp_gamess.so', ref_wfn)
-
-    
-    psi4.core.set_local_option('efp_gamess', 'coleman', 0)
-
+    # Get C transformation matrix from plugin
+    psi4.core.set_local_option('EFP_GAMESS', 'TRANS_MAT', 'C')
     trans_mat_c=psi4.core.plugin('efp_gamess.so',ref_wfn)
-    print("\nPrinting C transformation matrix")
-    print(trans_mat_c)
     print("\nPrinting C transformation matrix (as array)")
     print(np.asarray(trans_mat_c))
     trans_mat_c.print_out()
 
-    psi4.core.print_out("\nalright coleman H coming now")
-    psi4.core.set_local_option('efp_gamess', 'coleman', 1)
-
-    trans_mat_h=psi4.core.plugin('efp_gamess.so',ref_wfn)
-    print("\nPrinting H transformation matrix")
-    print(trans_mat_h)
-    print("\nPrinting H transformation matrix (as array)")
-    print(np.asarray(trans_mat_h))
-    trans_mat_h.print_out()
+    # Get F transformation matrix from plugin
+    psi4.core.set_local_option('EFP_GAMESS', 'TRANS_MAT', 'F')
+    trans_mat_f=psi4.core.plugin('efp_gamess.so',ref_wfn)
+    print("\nPrinting F transformation matrix (as array)")
+    print(np.asarray(trans_mat_f))
+    trans_mat_f.print_out()
 
     # Define hdf5 file
     f=h5py.File("form.h5","r")
+    # Group is "EFPcalc"
     group=f["EFPcalc"]
     print("\nListing dataset in h5 file EFPcalc group")
     print(list(group.keys()))
+    # Define dataset for Fock matrix
     fock_dset=group['CONVERGED TOTAL FOCK MATRIX']
     fock_np_lt=np.array(fock_dset)
     print("\nGAMESS Fock matrix as numpy array (lower triangle)")
     print(fock_np_lt)
     nbf=(ref_wfn.basisset().nbf())
+    # Print basis set info for debugging for now
     print("Basis set info")
     print(ref_wfn.basisset().has_puream())
+    # Make iterator to turn lower triangle Fock from Gamess into full matrix
     fock_lt_iter=np.nditer(fock_np_lt,order='C')
     print("nbf = ",nbf)
     fock_np=np.zeros((nbf,nbf))
@@ -134,37 +109,26 @@ def run_efp_gamess(name, **kwargs):
             fock_np[j][i]=fock_lt_iter[0]
             fock_lt_iter.iternext()
 
-    print("Upper triangle of fock printing next")
+    print("Upper triangle Fock from Gamess turned into full Matrix:")
     print(fock_np)
+    # Define data set for MO coefficients
     mo_dset=group['MO_coeff']
     mo_np=np.array(mo_dset)
     print("\nGAMESS MO coeficients")
     print(mo_np)
 
+    # Transform Gamess MO ordering to PSI4 order
     print("\nPSI4 MO coefficients")
     print("\nTransforming MO coefficients")
     psi4_C=np.matmul(trans_mat_c,np.transpose(mo_np))
     print("\nTransformed MO coefficients")
     print(psi4_C)
 
+    # Transform Gamess Fock matrix ordering to PSI4 order
     print ("\nTransforming GAMESS Fock matrix")
-    psi4_F_tmp=np.matmul(fock_np,np.transpose(trans_mat_h))
-    psi4_F=np.matmul(trans_mat_h,psi4_F_tmp)
+    psi4_F_tmp=np.matmul(fock_np,np.transpose(trans_mat_f))
+    psi4_F=np.matmul(trans_mat_f,psi4_F_tmp)
     print(psi4_F)
-
-    # Test adding these together
-    #print("Adding np.asarray(trans_mat_h)+np.asarray(trans_mat_c)\n")
-    #test_sum=np.asarray(trans_mat_h)+np.asarray(trans_mat_c)
-    #print(test_sum)
-
-
-    #test_sum2=np.asarray(Fa)+np.asarray(trans_mat_c)
-    #print(test_sum2)
-    #test_sum.print_out()
-    # Find out what trans_mat is (it's like the others)
-    #print(trans_mat)
-    # print actual values
-    #trans_mat.print_out()
 
     # Change return to original ref_wfn, hopefully changed
     #return efp_gamess_wfn

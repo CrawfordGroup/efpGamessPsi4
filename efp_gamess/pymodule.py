@@ -95,15 +95,18 @@ def run_efp_gamess(name, **kwargs):
     print("\nGAMESS Fock matrix as numpy array (lower triangle)")
     print(fock_np_lt)
     nbf=(ref_wfn.basisset().nbf())
+    nao=ref_wfn.basisset().nao()
+    nmo=ref_wfn.nmo()
+    nso=ref_wfn.nso()
     # Print basis set info for debugging for now
     print("Basis set info")
     print(ref_wfn.basisset().has_puream())
     # Make iterator to turn lower triangle Fock from Gamess into full matrix
     fock_lt_iter=np.nditer(fock_np_lt,order='C')
     print("nbf = ",nbf)
-    fock_np=np.zeros((nbf,nbf))
-    fock_np.shape=(nbf,nbf)
-    for i in range(nbf):
+    fock_np=np.zeros((nao,nao))
+    fock_np.shape=(nao,nao)
+    for i in range(nao):
         for j in range(i+1):
             fock_np[i][j]=fock_lt_iter[0]
             fock_np[j][i]=fock_lt_iter[0]
@@ -112,18 +115,24 @@ def run_efp_gamess(name, **kwargs):
     print("Upper triangle Fock from Gamess turned into full Matrix:")
     print(fock_np)
     # Define data set for MO coefficients
+    # Mo dset array is (146,154), F is (154,154)
+    # num ao is 154, # bf is 146
+    # Cgamess = (nao,nmo)
     mo_dset=group['MO_coeff']
-    mo_np=np.array(mo_dset)
+    mo_np=np.transpose(np.array(mo_dset))
+    #mo_np=np.array(mo_dset)
     print("\nGAMESS MO coeficients")
     print(mo_np)
 
     # Transform Gamess MO ordering to PSI4 order
     print("\nPSI4 MO coefficients")
     print("\nTransforming MO coefficients")
-    psi4_C=np.matmul(trans_mat_c,np.transpose(mo_np))
+    #psi4_C=np.matmul(trans_mat_c,np.transpose(mo_np))
+    psi4_C=np.matmul(trans_mat_c,mo_np)
     print("\nTransformed MO coefficients")
     print(psi4_C)
 
+#TODO transpose F when getting from Gamess fortran
     # Transform Gamess Fock matrix ordering to PSI4 order
     print ("\nTransforming GAMESS Fock matrix")
     psi4_F_tmp=np.matmul(fock_np,np.transpose(trans_mat_f))

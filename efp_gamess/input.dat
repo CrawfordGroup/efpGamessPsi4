@@ -1,7 +1,7 @@
-sys.path.insert(0, '/home/jchoward/newriver/programming/gits')
+sys.path.insert(0, './../')
 import efp_gamess
 
-memory 900 mb
+memory 1100 mb
 
 molecule {
   C      -0.760348   -0.184626   -0.375944
@@ -13,8 +13,7 @@ molecule {
   C      -2.126083   -0.688966    0.012252
   H      -2.575921   -0.049412    0.778944
   H      -2.787098   -0.705369   -0.863386
-  H      -2.062442   -1.709639    0.407385
-
+  H      -2.062442   -1.709639    0.407385 
 symmetry c1
 }
 
@@ -22,7 +21,8 @@ set {
   basis aug-cc-pvdz
   puream true
   gauge velocity
-  omega [355,436,589,633, nm]
+  #omega [355,436,589,633, nm]
+  omega [355, nm]
   scf_type pk
   mp2_type conv
 }
@@ -31,13 +31,22 @@ set efp_gamess {
   print 1
 }
 
+set ccenergy {
+ r_convergence 1
+ e_convergence 1
+}
+
+set cclambda {
+ r_convergence 1
+}
+
 set ccresponse {
   maxiter 150
-  r_convergence 5
+  r_convergence 1
 }
 
 egy,wfn=energy('efp_gamess',return_wfn=True)
-print(egy)
-efp_gamess.exampleFN()
-#properties('ccsd',properties=['rotation'],ref_wfn=wfn)
-energy('ccsd',ref_wfn=wfn)
+#print(egy)
+#efp_gamess.exampleFN()
+property('ccsd',properties=['rotation'],ref_wfn=wfn)
+#energy('ccsd',ref_wfn=wfn)

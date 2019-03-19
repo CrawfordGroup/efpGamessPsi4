@@ -48,5 +48,5 @@ set ccresponse {
 egy,wfn=energy('efp_gamess',return_wfn=True)
 #print(egy)
 #efp_gamess.exampleFN()
-property('ccsd',properties=['rotation'],ref_wfn=wfn)
+properties('ccsd',properties=['rotation'],ref_wfn=wfn)
 #energy('ccsd',ref_wfn=wfn)

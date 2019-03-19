@@ -29,16 +29,18 @@
  */
 
 #include "psi4/psi4-dec.h"
-#include "psi4/libparallel/parallel.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/liboptions/liboptions.h"
+#include "psi4/libmints/wavefunction.h"
 #include "psi4/libpsio/psio.hpp"
+#include "psi4/libpsio/psio.hpp"
+
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/basisset.h"
-#include "psi4/libmints/wavefunction.h"
 
 namespace psi{ namespace efp_gamess {
 
-extern "C"
+extern "C" PSI_API
 int read_options(std::string name, Options& options)
 {
     if (name == "EFP_GAMESS"|| options.read_globals()) {
@@ -50,7 +52,7 @@ int read_options(std::string name, Options& options)
     return true;
 }
 
-extern "C"
+extern "C" PSI_API
 SharedMatrix efp_gamess(SharedWavefunction ref_wfn, Options& options)
 //std::vector<SharedMatrix> efp_gamess(SharedWavefunction ref_wfn, Options& options)
 {

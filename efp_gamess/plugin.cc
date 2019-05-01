@@ -28,6 +28,8 @@
  * @END LICENSE
  */
 
+#include <memory>
+
 #include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/liboptions/liboptions.h"
@@ -46,7 +48,7 @@ int read_options(std::string name, Options& options)
     if (name == "EFP_GAMESS"|| options.read_globals()) {
         /*- The amount of information printed to the output file -*/
         options.add_int("PRINT", 1);
-				options.add_str("TRANS_MAT","");
+      	options.add_str("TRANS_MAT", "");
     }
 
     return true;
@@ -54,17 +56,16 @@ int read_options(std::string name, Options& options)
 
 extern "C" PSI_API
 SharedMatrix efp_gamess(SharedWavefunction ref_wfn, Options& options)
-//std::vector<SharedMatrix> efp_gamess(SharedWavefunction ref_wfn, Options& options)
 {
     int print = options.get_int("PRINT");
-		std::string which_trans = options.get_str("TRANS_MAT");
-	  std::shared_ptr<BasisSet> basis = ref_wfn->basisset();
-		int nao=basis->nao();
-		int nso=ref_wfn->nso();
-		int nmo=ref_wfn->nmo();
+    std::string which_trans = options.get_str("TRANS_MAT");
+	auto basis = ref_wfn->basisset();
+	int nao = basis->nao();
+	int nso = ref_wfn->nso();
+	int nmo = ref_wfn->nmo();
 
-    SharedMatrix UC_ = SharedMatrix(new Matrix("C Transformation matrix", nso, nao));
-    SharedMatrix UH_ = SharedMatrix(new Matrix("H Transformation matrix", nso, nao));
+    auto UC_ = std::make_shared<Matrix>("C Transformation matrix", nso, nao);
+    auto UH_ = std::make_shared<Matrix>("H Transformation matrix", nso, nao);
     bool puream = basis->has_puream();
     int so_off = 0;
     int ao_off = 0;
@@ -321,39 +322,23 @@ SharedMatrix efp_gamess(SharedWavefunction ref_wfn, Options& options)
         }
     }
 
+	//SharedMatrix diffMat = SharedMatrix(new Matrix("Difference in trans. mats",nso,nao));
+	//diffMat->add(UC_);
+	//diffMat->subtract(UH_);
+	//diffMat->print_out();
 
-	  //Matrix my_new_transformation = new Matrix("trans",10,10);
-	  SharedMatrix my_new_transformation(new Matrix("trans Mat",10,10));
-
-  /* Your code goes here */
-
-  // Typically you would build a new wavefunction and populate it with data
-		//return my_new_transformation;
-		//UC_->print_out();
-		//UH_->print_out();
-		SharedMatrix diffMat = SharedMatrix(new Matrix("Difference in trans. mats",nso,nao));
-		diffMat->add(UC_);
-		diffMat->subtract(UH_);
-		diffMat->print_out();
-
-		// try to come up with a return type
-		std::vector<SharedMatrix> ret_trans;
-		ret_trans.push_back(UC_);
-		ret_trans.push_back(UH_);
-		//return ret_trans;
-		if (which_trans=="C"){
-			outfile->Printf("Coleman I am return UC_\n");
-			return UC_;
-		}
-		else if (which_trans=="F"){
-			outfile->Printf("Coleman I am return UH_\n");
-			return UH_;
-		}
-		else {
-			outfile->Printf("Coleman, I got an invalid value for option trans_mat\n");
-			exit(1);
-		}
-    //return ref_wfn;
+	if (which_trans == "C"){
+		outfile->Printf("Coleman I am return UC_\n");
+		return UC_;
+	}
+	else if (which_trans == "F"){
+		outfile->Printf("Coleman I am return UH_\n");
+		return UH_;
+	}
+	else {
+		outfile->Printf("Coleman, I got an invalid value for option trans_mat\n");
+		exit(1);
+	}
 }
 
 }} // End namespaces

@@ -45,8 +45,7 @@ set ccresponse {
   r_convergence 1
 }
 
-egy,wfn=energy('efp_gamess',return_wfn=True)
-#print(egy)
-#efp_gamess.exampleFN()
-properties('ccsd',properties=['rotation'],ref_wfn=wfn)
-#energy('ccsd',ref_wfn=wfn)
+scf_e, wfn=energy('efp_gamess', return_wfn=True)
+#print(scf_e)
+properties('ccsd', properties=['rotation'], ref_wfn=wfn)
+#energy('ccsd', ref_wfn=wfn)

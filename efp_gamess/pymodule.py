@@ -77,13 +77,15 @@ def run_efp_gamess(name, **kwargs):
     #trans_mat_f.print_out()
 
     # Define hdf5 file
-    f = h5py.File("form.h5", "r")
+    h5name = psi4.core.get_local_option("EFP_GAMESS", "HDF5_FILENAME")
+    psi4.core.print_out("Reading HDF5 file {}\n".format(h5name))
+    f = h5py.File(h5name, "r")
     # Group is "EFPcalc"
     group = f["EFPcalc"]
     #print("\nListing dataset in h5 file EFPcalc group")
     #print(list(group.keys()))
     # Define dataset for Fock matrix
-    fock_dset = group['CONVERGED TOTAL FOCK MATRIX']
+    fock_dset = group['TOTAL FOCK MATRIX']
     fock_np_lt = np.array(fock_dset)
     #print("\nGAMESS Fock matrix as numpy array (lower triangle)")
     #print(fock_np_lt)
@@ -111,7 +113,7 @@ def run_efp_gamess(name, **kwargs):
     # Mo dset array is (146,154), F is (154,154)
     # num ao is 154, # bf is 146
     # Cgamess = (nao,nmo)
-    mo_dset = group['MO_coeff']
+    mo_dset = group['MO Coefficient']
     mo_np = np.transpose(np.array(mo_dset))
     #mo_np=np.array(mo_dset)
     #print("\nGAMESS MO coeficients")

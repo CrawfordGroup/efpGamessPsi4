@@ -49,6 +49,7 @@ int read_options(std::string name, Options& options)
         /*- The amount of information printed to the output file -*/
         options.add_int("PRINT", 1);
       	options.add_str("TRANS_MAT", "");
+      	options.add_str_i("HDF5_FILENAME", "");
     }
 
     return true;

@@ -29,11 +29,7 @@ set {
 
 set efp_gamess {
   print 1
-}
-
-set ccenergy {
- r_convergence 1
- e_convergence 1
+  hdf5_filename "gamess_ex.h5"
 }
 
 set cclambda {
@@ -45,7 +41,12 @@ set ccresponse {
   r_convergence 1
 }
 
-scf_e, wfn=energy('efp_gamess', return_wfn=True)
-#print(scf_e)
+# Reference value, see gamess_ex.log
+gamess_mp2 = -0.6464191500
+
+scf_e, wfn = energy('efp_gamess', return_wfn=True)
+
+ccsd_e = energy('ccsd', ref_wfn=wfn)
+compare_values(gamess_mp2, variable('MP2 CORRELATION ENERGY'), 8, 'MP2-EFP PTE correlation energy')
+
 properties('ccsd', properties=['rotation'], ref_wfn=wfn)
-#energy('ccsd', ref_wfn=wfn)

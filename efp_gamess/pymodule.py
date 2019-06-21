@@ -47,7 +47,7 @@ def run_efp_gamess(name, **kwargs):
     kwargs = p4util.kwargs_lower(kwargs)
 
     # Your plugin's psi4 run sequence goes here
-    psi4.core.set_local_option('EFP_GAMESS', 'PRINT', 1)
+    psi4.core.get_local_option('EFP_GAMESS', 'PRINT')
     # Compute a SCF reference, a wavefunction is return which holds the molecule used, orbitals
     # Fock matrices, and more
     print('Attention! This SCF may be density-fitted.')

@@ -1,5 +1,15 @@
-sys.path.insert(0, './../')
+from pathlib import Path
+efp_plugin = Path("./..")
+sys.path.insert(0, str(efp_plugin.expanduser().resolve()))
 import efp_gamess
+
+import mmap
+import re
+
+# Get the EFP2/MP2 energy from the GAMESS example output
+gamess_log = Path("./gamess_ex.log")
+with gamess_log.open('r') as f, mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as s:
+    gamess_mp2 = float(re.search(br'E\(2\)=(?P<emp2>.*)', s).group('emp2'))
 
 memory 1100 mb
 
@@ -40,9 +50,6 @@ set ccresponse {
   maxiter 150
   r_convergence 1
 }
-
-# Reference value, see gamess_ex.log
-gamess_mp2 = -0.6464191500
 
 scf_e, wfn = energy('efp_gamess', return_wfn=True)
 

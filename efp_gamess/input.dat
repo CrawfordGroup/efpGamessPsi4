@@ -1,5 +1,15 @@
-sys.path.insert(0, './../')
+from pathlib import Path
+efp_plugin = Path("./..")
+sys.path.insert(0, str(efp_plugin.expanduser().resolve()))
 import efp_gamess
+
+import mmap
+import re
+
+# Get the EFP2/MP2 energy from the GAMESS example output
+gamess_log = Path("./gamess_ex.log")
+with gamess_log.open('r') as f, mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as s:
+    gamess_mp2 = float(re.search(br'E\(2\)=(?P<emp2>.*)', s).group('emp2'))
 
 memory 1100 mb
 
@@ -29,11 +39,7 @@ set {
 
 set efp_gamess {
   print 1
-}
-
-set ccenergy {
- r_convergence 1
- e_convergence 1
+  hdf5_filename "gamess_ex.h5"
 }
 
 set cclambda {
@@ -45,8 +51,9 @@ set ccresponse {
   r_convergence 1
 }
 
-egy,wfn=energy('efp_gamess',return_wfn=True)
-#print(egy)
-#efp_gamess.exampleFN()
-property('ccsd',properties=['rotation'],ref_wfn=wfn)
-#energy('ccsd',ref_wfn=wfn)
+scf_e, wfn = energy('efp_gamess', return_wfn=True)
+
+ccsd_e = energy('ccsd', ref_wfn=wfn)
+compare_values(gamess_mp2, variable('MP2 CORRELATION ENERGY'), 8, 'MP2-EFP PTE correlation energy')
+
+properties('ccsd', properties=['rotation'], ref_wfn=wfn)

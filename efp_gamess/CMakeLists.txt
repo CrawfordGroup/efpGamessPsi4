@@ -1,7 +1,7 @@
 #
 # @BEGIN LICENSE
 #
-# efp_gamess by Psi4 Developer, a plugin to:
+# testplugin by Psi4 Developer, a plugin to:
 #
 # Psi4: an open-source quantum chemistry software package
 #
@@ -27,19 +27,11 @@
 #
 # @END LICENSE
 #
-"""Plugin docstring.
 
-"""
-__version__ = '0.1'
-__author__ = 'Psi4 Developer'
+cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
 
-# Load C++ plugin
-import os
+project(efp_gamess CXX)
 
-import psi4
+find_package(psi4 1.1 REQUIRED)
 
-from .pymodule import *
-
-plugdir = os.path.split(os.path.abspath(__file__))[0]
-sofile = plugdir + '/' + os.path.split(plugdir)[1] + '.so'
-psi4.core.plugin_load(sofile)
+add_psi4_plugin(efp_gamess plugin.cc)

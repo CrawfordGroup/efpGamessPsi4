@@ -66,15 +66,13 @@ def run_efp_gamess(name, **kwargs):
     # Get C transformation matrix from plugin
     psi4.core.set_local_option("EFP_GAMESS", "TRANS_MAT", "C")
     trans_mat_c = psi4.core.plugin("efp_gamess.so", ref_wfn)
-    # print("\nPrinting C transformation matrix (as array)")
-    # print(np.asarray(trans_mat_c))
+    # psi4.core.print_out("\nPrinting C transformation matrix")
     # trans_mat_c.print_out()
 
     # Get F transformation matrix from plugin
     psi4.core.set_local_option("EFP_GAMESS", "TRANS_MAT", "F")
     trans_mat_f = psi4.core.plugin("efp_gamess.so", ref_wfn)
-    # print("\nPrinting F transformation matrix (as array)")
-    # print(np.asarray(trans_mat_f))
+    # psi4.core.print_out("\nPrinting F transformation matrix")
     # trans_mat_f.print_out()
 
     # Define hdf5 file
@@ -135,14 +133,18 @@ def run_efp_gamess(name, **kwargs):
     psi4.core.print_out("DONE transforming GAMESS Fock matrix\n")
     # psi4_F_tmp = np.matmul(fock_np,np.transpose(trans_mat_f))
     # psi4_F = np.matmul(trans_mat_f, psi4_F_tmp)
+    # print("\nTransformed Fock matrix")
     # print(psi4_F)
 
     # This returns psi4.core.Matrix objects
     Fa = ref_wfn.Fa()
     Fa.copy(psi4.core.Matrix.from_array(psi4_F))
+    # psi4.core.print_out("\nPrinting Fa")
+    # ref_wfn.Fa().print_out()
+
     Ca = ref_wfn.Ca()
     Ca.copy(psi4.core.Matrix.from_array(psi4_C))
-    # ref_wfn.Fa().print_out()
+    # psi4.core.print_out("\nPrinting Ca")
     # ref_wfn.Ca().print_out()
 
     return ref_wfn

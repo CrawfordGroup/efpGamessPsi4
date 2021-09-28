@@ -15,10 +15,10 @@ authors:
     given-names: Roberto
     orcid: "https://orcid.org/0000-0002-5452-9239"
 cff-version: "1.1.0"
-doi: "10.00000/FIXME"
+doi: "10.5281/zenodo.5534280"
 license: "MPL-2.0"
 message: "If you use this software, please cite it using these metadata."
 repository-code: "https://github.com/CrawfordGroup/efpGamessPsi4"
 title: efpGamessPsi4
-version: "1.0.0"
+version: "1.0a0"
 ...
